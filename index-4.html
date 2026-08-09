@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cancoé — Gift</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Poppins:wght@400;500;600&family=Jost:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#4A3D37;
+    --ink-deep:#332821;
+    --pink-bg:#F6E1F1;
+    --pink-soft:#FCF1FB;
+    --bronze:#8B5A3C;
+    --bronze-deep:#4F3018;
+    --copper:#A97C52;
+    --blush:#F0C9E3;
+    --shadow:0 20px 50px rgba(74,61,55,0.18);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--pink-bg);
+    color:var(--ink);
+    font-family:'Poppins', sans-serif;
+    overflow-x:hidden;
+    scroll-snap-type:y mandatory;
+    height:100vh;
+    overflow-y:scroll;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  .eyebrow{
+    font-family:'Jost', sans-serif;
+    font-size:11px;
+    letter-spacing:0.24em;
+    text-transform:uppercase;
+    color:var(--bronze);
+    font-weight:600;
+  }
+
+  .section{
+    min-height:100vh;
+    width:100%;
+    scroll-snap-align:start;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    padding:8vh 6vw;
+    text-align:center;
+  }
+
+  .torn-edge{
+    position:absolute; left:0; right:0; bottom:0; height:20px;
+    background:
+      linear-gradient(135deg, var(--pink-bg) 50%, transparent 50%) 0 0/14px 20px repeat-x,
+      linear-gradient(-135deg, var(--pink-bg) 50%, transparent 50%) 0 100%/14px 20px repeat-x;
+    z-index:3;
+  }
+  #gallery .torn-edge{
+    background:
+      linear-gradient(135deg, var(--pink-soft) 50%, transparent 50%) 0 0/14px 20px repeat-x,
+      linear-gradient(-135deg, var(--pink-soft) 50%, transparent 50%) 0 100%/14px 20px repeat-x;
+  }
+
+  .btn{
+    font-family:'Jost', sans-serif;
+    font-size:13px;
+    letter-spacing:0.08em;
+    font-weight:600;
+    border:none;
+    cursor:pointer;
+    padding:16px 34px;
+    border-radius:999px;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .btn:focus-visible{ outline:2px solid var(--copper); outline-offset:3px; }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--bronze), #6d4128);
+    color:var(--pink-soft);
+    box-shadow:0 12px 30px rgba(74,61,55,0.3);
+  }
+  .btn-primary:hover{ transform:translateY(-2px); }
+  .btn-ghost{
+    background:transparent;
+    border:1px solid rgba(74,61,55,0.25);
+    color:var(--ink);
+  }
+  .btn-ghost:hover{ background:rgba(74,61,55,0.06); }
+
+  /* ===== COVER ===== */
+  #cover{
+    background: radial-gradient(120% 100% at 50% 0%, var(--pink-bg) 0%, #EFCBE7 75%);
+    color: var(--ink);
+    overflow:hidden;
+  }
+  #cover .sprinkles span{
+    position:absolute; width:6px; height:6px; border-radius:50%;
+    background:var(--copper); opacity:0.55;
+    animation:drift 9s linear infinite;
+  }
+  @keyframes drift{
+    0%{ transform:translateY(-10vh) rotate(0deg); opacity:0; }
+    10%{ opacity:0.7; }
+    100%{ transform:translateY(110vh) rotate(200deg); opacity:0; }
+  }
+  .wordmark{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:clamp(44px, 11vw, 74px);
+    letter-spacing:0.01em;
+    margin-bottom:10px;
+    color:var(--ink-deep);
+  }
+  #cover .tagline{
+    font-family:'Jost', sans-serif;
+    font-size:12px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--bronze);
+    margin:0 0 46px 0;
+  }
+  .scroll-cue{
+    position:absolute; bottom:34px; left:50%; transform:translateX(-50%);
+    font-family:'Jost',sans-serif; font-size:10px; letter-spacing:0.2em;
+    color:var(--bronze); opacity:0.8;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .scroll-cue .line{ width:1px; height:26px; background:var(--copper); animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:0.3;} 50%{ opacity:1;} }
+
+  /* ===== MESSAGE ===== */
+  #message{ background:var(--pink-bg); }
+  #message h2{
+    font-family:'Fraunces', serif; font-weight:600;
+    font-size:clamp(28px, 7vw, 46px); margin:12px 0 8px 0;
+  }
+  #message h2 em{ color:var(--bronze); font-style:italic; }
+  #message .occ{
+    font-family:'Jost',sans-serif; font-size:12px; letter-spacing:0.14em;
+    text-transform:uppercase; color:var(--bronze); margin:0 0 22px 0;
+  }
+  .quote-card{
+    background:var(--pink-soft);
+    border:1px solid rgba(169,124,82,0.35);
+    border-radius:18px; padding:28px 26px; max-width:440px;
+    box-shadow:var(--shadow);
+  }
+  .quote-card p{ font-size:16px; line-height:1.8; margin:0; }
+
+  /* ===== GALLERY ===== */
+  #gallery{ background:var(--pink-soft); padding-top:10vh; }
+  #gallery h2{
+    font-family:'Fraunces', serif; font-weight:600;
+    font-size:clamp(26px, 6vw, 40px); margin:14px 0 6px 0;
+  }
+  #gallery .sub{
+    font-family:'Jost',sans-serif; font-size:11px; letter-spacing:0.1em;
+    color:#9c8378; margin:0 0 30px 0;
+  }
+  .photo-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    width:min(420px, 88vw);
+  }
+  .photo-card{
+    background:var(--pink-soft); border-radius:16px; overflow:hidden;
+    box-shadow:var(--shadow); display:flex; flex-direction:column;
+  }
+  .photo-card .photo-img{
+    width:100%; aspect-ratio:1/1; background-size:cover; background-position:center;
+    background-color:var(--bronze-deep); display:flex; align-items:center; justify-content:center;
+    color:var(--pink-soft);
+  }
+  .photo-card .fallback-icon{ font-size:32px; }
+  .photo-card .photo-caption{
+    padding:14px 14px 16px;
+  }
+  .photo-card .photo-caption p{
+    font-family:'Fraunces', serif; font-style:italic; font-size:14px;
+    line-height:1.55; color:var(--ink); margin:0; text-align:center;
+  }
+
+  /* ===== LETTER ===== */
+  #letter{ background: linear-gradient(180deg, var(--bronze-deep), #2b1a0c); color:var(--pink-soft); }
+  #letter h2{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:500;
+    font-size:clamp(26px, 6vw, 40px); margin:0 0 40px 0;
+  }
+  .envelope-wrap{ perspective:1200px; width:min(270px, 78vw); }
+  .envelope{ position:relative; width:100%; aspect-ratio:3/2; cursor:pointer; }
+  .env-body{ position:absolute; inset:0; background:var(--pink-soft); border-radius:6px; box-shadow:0 20px 45px rgba(0,0,0,0.5); }
+  .env-flap{
+    position:absolute; top:0; left:0; right:0; height:0; width:0;
+    border-left:135px solid transparent; border-right:135px solid transparent;
+    border-top:88px solid var(--blush);
+    transform-origin:top; transition:transform .6s cubic-bezier(.6,0,.3,1); z-index:2;
+  }
+  .envelope.open .env-flap{ transform:rotateX(180deg); }
+  .seal{
+    position:absolute; top:60px; left:50%; transform:translateX(-50%);
+    width:42px; height:42px;
+    background:radial-gradient(circle at 35% 30%, #c99566, var(--copper) 60%, #6d4128 100%);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:17px; color:var(--pink-soft); box-shadow:0 6px 14px rgba(0,0,0,0.4);
+    z-index:3; transition:opacity .3s ease, transform .3s ease;
+  }
+  .envelope.open .seal{ opacity:0; transform:translateX(-50%) scale(0.4); }
+  .env-label{
+    position:absolute; bottom:14px; left:0; right:0; text-align:center;
+    font-family:'Jost',sans-serif; font-size:10px; letter-spacing:0.16em;
+    text-transform:uppercase; color:var(--ink); z-index:1;
+  }
+  .letter-paper{
+    max-width:420px; background:var(--pink-soft); color:var(--ink); border-radius:10px;
+    padding:32px 28px; margin-top:28px; box-shadow:0 25px 60px rgba(0,0,0,0.45);
+    text-align:left; max-height:0; overflow:hidden; opacity:0; transform:translateY(14px);
+    transition:max-height .7s ease, opacity .6s ease, transform .6s ease;
+  }
+  .letter-paper.show{ max-height:600px; opacity:1; transform:translateY(0); }
+  .letter-paper p{ font-size:15.5px; line-height:1.85; margin:0 0 14px 0; }
+  .letter-paper .sign{
+    font-family:'Fraunces', serif; font-style:italic; font-size:19px; color:var(--bronze);
+    margin-top:16px;
+  }
+  .footer-note{
+    margin-top:34px; font-family:'Jost',sans-serif; font-size:10px;
+    letter-spacing:0.1em; color:var(--blush); opacity:0.7;
+  }
+
+  #loadingScreen{
+    position:fixed; inset:0; background:var(--bronze-deep); color:var(--pink-soft);
+    display:flex; align-items:center; justify-content:center; z-index:99;
+    font-family:'Jost',sans-serif; font-size:13px; letter-spacing:0.14em;
+  }
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">Loading your gift…</div>
+
+<!-- ===== COVER ===== -->
+<section class="section" id="cover">
+  <div class="sprinkles" id="sprinkles"></div>
+  <div class="wordmark">Cancoé</div>
+  <p class="tagline">The Sweetness Bouquets</p>
+  <button class="btn btn-primary" onclick="goTo('message')">Open Your Gift →</button>
+  <div class="scroll-cue"><div class="line"></div>SCROLL</div>
+  <div class="torn-edge"></div>
+</section>
+
+<!-- ===== MESSAGE ===== -->
+<section class="section" id="message">
+  <span class="eyebrow">A Sweet Note</span>
+  <h2>For <em id="recName">You</em></h2>
+  <p class="occ" id="recOcc"></p>
+  <div class="quote-card">
+    <p id="recMessagePreview">We put together something sweet, just for you 🍫</p>
+  </div>
+  <div style="margin-top:26px;">
+    <button class="btn btn-primary" onclick="goTo('gallery')">Continue →</button>
+  </div>
+  <div class="torn-edge"></div>
+</section>
+
+<!-- ===== GALLERY ===== -->
+<section class="section" id="gallery">
+  <span class="eyebrow">A Little Something</span>
+  <h2>A touch of sweetness, made for you</h2>
+  <p class="sub">A NOTE UNDER EVERY PHOTO</p>
+
+  <div class="photo-grid" id="photoGrid"></div>
+
+  <div style="margin-top:36px;">
+    <button class="btn btn-ghost" onclick="goTo('letter')">Continue to Your Letter →</button>
+  </div>
+  <div class="torn-edge"></div>
+</section>
+
+<!-- ===== LETTER ===== -->
+<section class="section" id="letter">
+  <span class="eyebrow" style="color:var(--copper)">One More Thing</span>
+  <h2>Before you go</h2>
+
+  <div class="envelope-wrap">
+    <div class="envelope" id="envelope">
+      <div class="env-body"></div>
+      <div class="env-flap"></div>
+      <div class="seal">✦</div>
+      <div class="env-label">Open Your Letter</div>
+    </div>
+  </div>
+
+  <div class="letter-paper" id="letterPaper">
+    <p id="fullMessage">...</p>
+    <div class="sign">— Cancoé 🍫</div>
+  </div>
+
+  <div class="footer-note">Made with love, by Cancoé</div>
+</section>
+
+<script>
+  const SPREADSHEET_ID = "1GDQS0XGVmFfln8_k6w_bYckQxo3fZ5SabhTqBbDipag";
+  const SHEET_NAME      = "Form Responses 1";
+
+  // Converts a Google Drive share link into a URL that actually renders as an image
+  function driveImageUrl(url){
+    if(!url) return null;
+    const match = url.match(/[-\w]{25,}/);
+    if(!match) return null;
+    return `https://lh3.googleusercontent.com/d/${match[0]}`;
+  }
+
+  const sprinkleWrap = document.getElementById('sprinkles');
+  for(let i=0;i<20;i++){
+    const s = document.createElement('span');
+    s.style.position='absolute';
+    s.style.left = Math.random()*100 + '%';
+    s.style.animationDelay = (Math.random()*9) + 's';
+    s.style.animationDuration = (7+Math.random()*5) + 's';
+    sprinkleWrap.appendChild(s);
+  }
+
+  function goTo(id){
+    document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const recipientId = params.get('id');
+
+  function renderRecipient(row){
+    const welcome = row['welcome massage'] || '';
+    const finalMsg = row['final massage'] || 'We put together something sweet, just for you, and we hope it brings a smile.';
+
+    document.getElementById('recName').textContent = row.name || 'You';
+    document.getElementById('recOcc').textContent = row.occasion || '';
+    document.getElementById('recMessagePreview').textContent =
+      welcome || 'We put together something sweet, just for you 🍫';
+    document.getElementById('fullMessage').textContent = finalMsg;
+
+    const pairs = [1,2,3,4]
+      .map(i => ({ url: driveImageUrl(row['photo' + i]), caption: row['caption' + i] }))
+      .filter(p => p.url);
+    const gridWrap = document.getElementById('photoGrid');
+    gridWrap.innerHTML = '';
+    const list = pairs.length ? pairs : [{url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}];
+    list.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'photo-card';
+
+      const img = document.createElement('div');
+      img.className = 'photo-img';
+      if(item.url){
+        img.style.backgroundImage = `url('${item.url}')`;
+      } else {
+        img.innerHTML = '<div class="fallback-icon">🍬</div>';
+      }
+      card.appendChild(img);
+
+      const cap = document.createElement('div');
+      cap.className = 'photo-caption';
+      cap.innerHTML = `<p>${item.caption || 'A little note for you 💛'}</p>`;
+      card.appendChild(cap);
+
+      gridWrap.appendChild(card);
+    });
+  }
+
+  async function loadData(){
+    const loadingScreen = document.getElementById('loadingScreen');
+
+    if(recipientId === null){
+      loadingScreen.textContent = 'This link is incomplete. Please use the QR code from your Cancoé card.';
+      return;
+    }
+
+    try{
+      const res = await fetch(`https://opensheet.elk.sh/${SPREADSHEET_ID}/${encodeURIComponent(SHEET_NAME)}`);
+      const rows = await res.json();
+      const row = rows[Number(recipientId)];
+
+      if(!row){
+        loadingScreen.textContent = 'Sorry, this link isn\'t working. Please contact the Cancoé team.';
+        return;
+      }
+
+      renderRecipient(row);
+      loadingScreen.style.display = 'none';
+    }catch(err){
+      loadingScreen.textContent = 'Something went wrong loading your gift. Please try again in a moment.';
+    }
+  }
+  loadData();
+
+  const envelope = document.getElementById('envelope');
+  const letterPaper = document.getElementById('letterPaper');
+  envelope.addEventListener('click', () => {
+    envelope.classList.add('open');
+    setTimeout(() => letterPaper.classList.add('show'), 350);
+  });
+</script>
+</body>
+</html>
