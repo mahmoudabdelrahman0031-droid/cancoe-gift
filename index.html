@@ -225,7 +225,7 @@ async function loadData(){
   }
 
   try{
-    const res = await fetch(`https://opensheet.vercel.app/${SPREADSHEET_ID}/${SHEET_NAME}`);
+    const res = await fetch(`https://opensheet.elk.sh/${SPREADSHEET_ID}/${encodeURIComponent(SHEET_NAME)}`);
     const rows = await res.json();
     const data = rows[Number(rowId)];
 
@@ -234,16 +234,16 @@ async function loadData(){
       return;
     }
 
-    document.getElementById("person-name").textContent   = data["Name"] || "";
-    document.getElementById("occasion-line").textContent = occasionLine(data["Occasion"]);
-    document.getElementById("welcome-msg").textContent   = data["Welcome Message"] || "";
-    document.getElementById("final-message-text").textContent = data["Final Message"] || "";
+    document.getElementById("person-name").textContent   = data["name"] || "";
+    document.getElementById("occasion-line").textContent = occasionLine(data["occasion"]);
+    document.getElementById("welcome-msg").textContent   = data["welcome massage"] || "";
+    document.getElementById("final-message-text").textContent = data["final massage"] || "";
 
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
     for(let i = 1; i <= 4; i++){
-      const imgUrl   = driveDirectLink(data[`Photo${i}`]);
-      const caption  = data[`Caption${i}`] || "";
+      const imgUrl   = driveDirectLink(data[`photo${i}`]);
+      const caption  = data[`caption${i}`] || "";
       if(!imgUrl) continue;
 
       const card = document.createElement("div");
