@@ -165,50 +165,27 @@
     font-family:'Jost',sans-serif; font-size:11px; letter-spacing:0.1em;
     color:#9c8378; margin:0 0 30px 0;
   }
-  .carousel{ width:min(300px, 78vw); position:relative; }
-  .slides{
-    position:relative; width:100%; aspect-ratio:3/4; border-radius:18px;
-    overflow:hidden; box-shadow:var(--shadow); background:var(--bronze-deep);
+  .photo-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    width:min(420px, 88vw);
   }
-  .slide{
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; color:var(--pink-soft);
-    opacity:0; transform:scale(1.04); cursor:pointer;
-    transition:opacity .5s ease, transform .5s ease;
-    background-size:cover; background-position:center;
+  .photo-card{
+    background:var(--pink-soft); border-radius:16px; overflow:hidden;
+    box-shadow:var(--shadow); display:flex; flex-direction:column;
   }
-  .slide.active{ opacity:1; transform:scale(1); }
-  .slide .fallback-icon{ font-size:40px; }
-  .slide-caption{
-    position:absolute; inset:0;
-    background:rgba(51,40,33,0.82);
-    display:flex; align-items:center; justify-content:center;
-    padding:26px;
-    opacity:0; pointer-events:none;
-    transition:opacity .35s ease;
+  .photo-card .photo-img{
+    width:100%; aspect-ratio:1/1; background-size:cover; background-position:center;
+    background-color:var(--bronze-deep); display:flex; align-items:center; justify-content:center;
+    color:var(--pink-soft);
   }
-  .slide.show-caption .slide-caption{ opacity:1; pointer-events:auto; }
-  .slide-caption p{
-    font-family:'Fraunces', serif; font-style:italic; font-size:17px;
-    line-height:1.6; color:var(--pink-soft); margin:0;
+  .photo-card .fallback-icon{ font-size:32px; }
+  .photo-card .photo-caption{
+    padding:14px 14px 16px;
   }
-  .tap-hint{
-    position:absolute; bottom:12px; left:0; right:0; text-align:center;
-    font-family:'Jost',sans-serif; font-size:9px; letter-spacing:0.14em;
-    text-transform:uppercase; color:rgba(252,241,251,0.75);
-    transition:opacity .3s ease;
+  .photo-card .photo-caption p{
+    font-family:'Fraunces', serif; font-style:italic; font-size:14px;
+    line-height:1.55; color:var(--ink); margin:0; text-align:center;
   }
-  .slide.show-caption .tap-hint{ opacity:0; }
-  .carousel-nav{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:16px; }
-  .arrow-btn{
-    width:36px; height:36px; border-radius:50%;
-    border:1px solid rgba(74,61,55,0.25); background:var(--pink-bg); color:var(--ink);
-    font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  }
-  .arrow-btn:hover{ background:var(--blush); }
-  .dots{ display:flex; gap:7px; }
-  .dot{ width:7px; height:7px; border-radius:50%; background:rgba(74,61,55,0.25); cursor:pointer; transition:all .2s ease; }
-  .dot.active{ background:var(--bronze); width:20px; border-radius:5px; }
 
   /* ===== LETTER ===== */
   #letter{ background: linear-gradient(180deg, var(--bronze-deep), #2b1a0c); color:var(--pink-soft); }
@@ -296,16 +273,9 @@
 <section class="section" id="gallery">
   <span class="eyebrow">A Little Something</span>
   <h2>A touch of sweetness, made for you</h2>
-  <p class="sub">TAP A PHOTO TO REVEAL A NOTE</p>
+  <p class="sub">A NOTE UNDER EVERY PHOTO</p>
 
-  <div class="carousel">
-    <div class="slides" id="slides"></div>
-    <div class="carousel-nav">
-      <button class="arrow-btn" id="prevBtn">←</button>
-      <div class="dots" id="dots"></div>
-      <button class="arrow-btn" id="nextBtn">→</button>
-    </div>
-  </div>
+  <div class="photo-grid" id="photoGrid"></div>
 
   <div style="margin-top:36px;">
     <button class="btn btn-ghost" onclick="goTo('letter')">Continue to Your Letter →</button>
@@ -377,64 +347,28 @@
     const pairs = [1,2,3,4]
       .map(i => ({ url: driveImageUrl(row['photo' + i]), caption: row['caption' + i] }))
       .filter(p => p.url);
-    const slidesWrap = document.getElementById('slides');
-    slidesWrap.innerHTML = '';
-    const list = pairs.length ? pairs : [{url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}];
-    list.forEach((item, i) => {
-      const d = document.createElement('div');
-      d.className = 'slide' + (i===0 ? ' active' : '');
+    const gridWrap = document.getElementById('photoGrid');
+    gridWrap.innerHTML = '';
+    const list = pairs.length ? pairs : [{url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}];
+    list.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'photo-card';
+
+      const img = document.createElement('div');
+      img.className = 'photo-img';
       if(item.url){
-        d.style.backgroundImage = `url('${item.url}')`;
+        img.style.backgroundImage = `url('${item.url}')`;
       } else {
-        d.innerHTML = '<div class="fallback-icon">🍬</div>';
+        img.innerHTML = '<div class="fallback-icon">🍬</div>';
       }
+      card.appendChild(img);
+
       const cap = document.createElement('div');
-      cap.className = 'slide-caption';
-      const capText = item.caption || 'A little note for you 💛';
-      cap.innerHTML = `<p>${capText}</p>`;
-      d.appendChild(cap);
-      const hint = document.createElement('div');
-      hint.className = 'tap-hint';
-      hint.textContent = 'Tap for a note';
-      d.appendChild(hint);
-      d.addEventListener('click', () => d.classList.toggle('show-caption'));
-      slidesWrap.appendChild(d);
-    });
-    setupCarousel();
-  }
+      cap.className = 'photo-caption';
+      cap.innerHTML = `<p>${item.caption || 'A little note for you 💛'}</p>`;
+      card.appendChild(cap);
 
-  function setupCarousel(){
-    const slides = Array.from(document.querySelectorAll('.slide'));
-    const dotsWrap = document.getElementById('dots');
-    dotsWrap.innerHTML = '';
-    let current = 0;
-    slides.forEach((_, i) => {
-      const d = document.createElement('div');
-      d.className = 'dot' + (i===0 ? ' active' : '');
-      d.addEventListener('click', () => showSlide(i));
-      dotsWrap.appendChild(d);
-    });
-    const dots = Array.from(dotsWrap.children);
-
-    function showSlide(i){
-      slides[current].classList.remove('active', 'show-caption');
-      dots[current].classList.remove('active');
-      current = (i + slides.length) % slides.length;
-      slides[current].classList.add('active');
-      dots[current].classList.add('active');
-    }
-    document.getElementById('prevBtn').onclick = () => showSlide(current-1);
-    document.getElementById('nextBtn').onclick = () => showSlide(current+1);
-
-    const slidesEl = document.getElementById('slides');
-    let touchX = null;
-    slidesEl.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
-    slidesEl.addEventListener('touchend', e => {
-      if(touchX === null) return;
-      const dx = e.changedTouches[0].clientX - touchX;
-      if(dx > 40) showSlide(current-1);
-      else if(dx < -40) showSlide(current+1);
-      touchX = null;
+      gridWrap.appendChild(card);
     });
   }
 
