@@ -277,7 +277,7 @@
 </head>
 <body>
 
-<!-- ===== PASSWORD GATE (shown first, blocks everything) ===== -->
+<!-- ===== PASSWORD GATE ===== -->
 <div id="gate">
   <div class="wordmark">Cancoé</div>
   <p class="tagline">The Sweetness Bouquets</p>
@@ -354,7 +354,6 @@
   const SPREADSHEET_ID = "1GDQS0XGVmFfln8_k6w_bYckQxo3fZ5SabhTqBbDipag";
   const SHEET_NAME      = "Form Responses 1";
 
-  // Converts a Google Drive share link into a URL that actually renders as an image
   function driveImageUrl(url){
     if(!url) return null;
     const match = url.match(/[-\w]{25,}/);
@@ -362,12 +361,14 @@
     return `https://lh3.googleusercontent.com/d/${match[0]}`;
   }
 
-  // Finds a column's value no matter how the Google Form question was capitalized or spaced
-  // e.g. "Password", "password", " PASSWORD " all match a request for "password"
-  function getField(row, name){
-    const target = name.trim().toLowerCase();
-    const key = Object.keys(row).find(k => k.trim().toLowerCase() === target);
-    return key ? (row[key] || '') : '';
+  // دالة لجلب البيانات بناءً على ترتيب الأعمدة (Array Index)
+  // كولوم 1 = 0، كولوم 2 = 1، وهكذا..
+  function getCol(row, index){
+    const keys = Object.keys(row);
+    if(keys[index] !== undefined){
+      return row[keys[index]] || '';
+    }
+    return '';
   }
 
   const sprinkleWrap = document.getElementById('sprinkles');
@@ -385,21 +386,33 @@
   }
 
   function renderRecipient(row){
-    const welcome = getField(row, 'welcome massage');
-    const finalMsg = getField(row, 'final massage') || 'We put together something sweet, just for you, and we hope it brings a smile.';
+    // الترتيب حسب الأعمدة المحددة:
+    // Index 1: الاسم (العمود الثاني)
+    // Index 2: المناسبة (العمود الثالث)
+    // Index 3: رسالة ترحيبية (العمود الرابع)
+    // Index 12: الرسالة الكبيرة (العمود الـ 13)
+    const name = getCol(row, 1) || 'You';
+    const occasion = getCol(row, 2);
+    const welcome = getCol(row, 3);
+    const finalMsg = getCol(row, 12) || 'We put together something sweet, just for you, and we hope it brings a smile.';
 
-    document.getElementById('recName').textContent = getField(row, 'name') || 'You';
-    document.getElementById('recOcc').textContent = getField(row, 'occasion');
-    document.getElementById('recMessagePreview').textContent =
-      welcome || 'We put together something sweet, just for you 🍫';
+    document.getElementById('recName').textContent = name;
+    document.getElementById('recOcc').textContent = occasion;
+    document.getElementById('recMessagePreview').textContent = welcome || 'We put together something sweet, just for you 🍫';
     document.getElementById('fullMessage').textContent = finalMsg;
 
-    const pairs = [1,2,3,4]
-      .map(i => ({ url: driveImageUrl(getField(row, 'photo' + i)), caption: getField(row, 'caption' + i) }))
-      .filter(p => p.url);
+    // تجميع الصور والكابتشنات حسب الأعمدة (من العمود 5 إلى 12)
+    const pairs = [
+      { url: driveImageUrl(getCol(row, 4)), caption: getCol(row, 5) },   // ص 1 (عمود 5 و 6)
+      { url: driveImageUrl(getCol(row, 6)), caption: getCol(row, 7) },   // ص 2 (عمود 7 و 8)
+      { url: driveImageUrl(getCol(row, 8)), caption: getCol(row, 9) },   // ص 3 (عمود 9 و 10)
+      { url: driveImageUrl(getCol(row, 10)), caption: getCol(row, 11) }  // ص 4 (عمود 11 و 12)
+    ].filter(p => p.url);
+
     const gridWrap = document.getElementById('photoGrid');
     gridWrap.innerHTML = '';
     const list = pairs.length ? pairs : [{url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}, {url:null, caption:null}];
+    
     list.forEach((item) => {
       const card = document.createElement('div');
       card.className = 'photo-card';
@@ -422,7 +435,6 @@
     });
   }
 
-  /* ===== Password gate logic ===== */
   let allRows = null;
   const gate = document.getElementById('gate');
   const gateStatus = document.getElementById('gateStatus');
@@ -450,12 +462,16 @@
       gateError.textContent = 'Please enter your code.';
       return;
     }
-    if(allRows === null){
-      gateError.textContent = 'Still loading, please wait a second and try again.';
+    if(allRows === null || allRows.length === 0){
+      gateError.textContent = 'Still loading or failed to connect to Sheets. Please refresh and try again.';
       return;
     }
 
-    const row = allRows.find(r => getField(r, 'password').trim().toLowerCase() === entered.toLowerCase());
+    // البحث في العمود رقم 14 (Index 13) وهو الخاص بالباسورد
+    const row = allRows.find(r => {
+      const dbPassword = getCol(r, 13);
+      return dbPassword && String(dbPassword).trim().toLowerCase() === entered.toLowerCase();
+    });
 
     if(!row){
       gateError.textContent = 'That code doesn\'t match. Please check and try again.';
