@@ -16,6 +16,7 @@
     --bronze-deep:#4F3018;
     --copper:#A97C52;
     --blush:#F0C9E3;
+    --error:#B3453D;
     --shadow:0 20px 50px rgba(74,61,55,0.18);
   }
 
@@ -87,12 +88,53 @@
     box-shadow:0 12px 30px rgba(74,61,55,0.3);
   }
   .btn-primary:hover{ transform:translateY(-2px); }
+  .btn-primary:disabled{ opacity:0.6; cursor:default; transform:none; }
   .btn-ghost{
     background:transparent;
     border:1px solid rgba(74,61,55,0.25);
     color:var(--ink);
   }
   .btn-ghost:hover{ background:rgba(74,61,55,0.06); }
+
+  /* ===== PASSWORD GATE ===== */
+  #gate{
+    position:fixed; inset:0; z-index:200;
+    background: radial-gradient(120% 100% at 50% 0%, var(--pink-bg) 0%, #EFCBE7 75%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:8vh 7vw; text-align:center;
+  }
+  #gate .wordmark{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:600;
+    font-size:clamp(34px, 9vw, 50px); color:var(--ink-deep); margin-bottom:6px;
+  }
+  #gate .tagline{
+    font-family:'Jost', sans-serif; font-size:11px; letter-spacing:0.2em;
+    text-transform:uppercase; color:var(--bronze); margin:0 0 40px 0;
+  }
+  .gate-card{
+    background:var(--pink-soft); border:1px solid rgba(169,124,82,0.35);
+    border-radius:18px; padding:30px 26px; max-width:360px; width:100%;
+    box-shadow:var(--shadow);
+  }
+  .gate-card p.hint{
+    font-size:14px; line-height:1.6; margin:0 0 20px 0; color:var(--ink);
+  }
+  #passwordInput{
+    width:100%; padding:14px 16px; border-radius:12px;
+    border:1px solid rgba(74,61,55,0.25); background:#fff;
+    font-family:'Jost', sans-serif; font-size:15px; letter-spacing:0.05em;
+    text-align:center; color:var(--ink); margin-bottom:14px;
+    outline:none;
+  }
+  #passwordInput:focus{ border-color:var(--copper); }
+  #gateError{
+    color:var(--error); font-family:'Jost',sans-serif; font-size:12px;
+    margin:0 0 14px 0; min-height:14px;
+  }
+  #gateStatus{
+    margin-top:18px; font-family:'Jost',sans-serif; font-size:11px;
+    letter-spacing:0.08em; color:var(--bronze); opacity:0.8;
+  }
 
   /* ===== COVER ===== */
   #cover{
@@ -179,9 +221,7 @@
     color:var(--pink-soft);
   }
   .photo-card .fallback-icon{ font-size:32px; }
-  .photo-card .photo-caption{
-    padding:14px 14px 16px;
-  }
+  .photo-card .photo-caption{ padding:14px 14px 16px; }
   .photo-card .photo-caption p{
     font-family:'Fraunces', serif; font-style:italic; font-size:14px;
     line-height:1.55; color:var(--ink); margin:0; text-align:center;
@@ -224,7 +264,7 @@
     transition:max-height .7s ease, opacity .6s ease, transform .6s ease;
   }
   .letter-paper.show{ max-height:600px; opacity:1; transform:translateY(0); }
-  .letter-paper p{ font-size:15.5px; line-height:1.85; margin:0 0 14px 0; }
+  .letter-paper p{ font-size:15.5px; line-height:1.85; margin:0 0 14px 0; white-space:pre-wrap; }
   .letter-paper .sign{
     font-family:'Fraunces', serif; font-style:italic; font-size:19px; color:var(--bronze);
     margin-top:16px;
@@ -233,17 +273,22 @@
     margin-top:34px; font-family:'Jost',sans-serif; font-size:10px;
     letter-spacing:0.1em; color:var(--blush); opacity:0.7;
   }
-
-  #loadingScreen{
-    position:fixed; inset:0; background:var(--bronze-deep); color:var(--pink-soft);
-    display:flex; align-items:center; justify-content:center; z-index:99;
-    font-family:'Jost',sans-serif; font-size:13px; letter-spacing:0.14em;
-  }
 </style>
 </head>
 <body>
 
-<div id="loadingScreen">Loading your gift…</div>
+<!-- ===== PASSWORD GATE (shown first, blocks everything) ===== -->
+<div id="gate">
+  <div class="wordmark">Cancoé</div>
+  <p class="tagline">The Sweetness Bouquets</p>
+  <div class="gate-card">
+    <p class="hint">Enter your personal code to open your gift</p>
+    <input type="text" id="passwordInput" placeholder="Your code" autocomplete="off" inputmode="text">
+    <p id="gateError"></p>
+    <button class="btn btn-primary" id="unlockBtn" style="width:100%;">Unlock My Gift</button>
+  </div>
+  <p id="gateStatus"></p>
+</div>
 
 <!-- ===== COVER ===== -->
 <section class="section" id="cover">
@@ -317,6 +362,14 @@
     return `https://lh3.googleusercontent.com/d/${match[0]}`;
   }
 
+  // Finds a column's value no matter how the Google Form question was capitalized or spaced
+  // e.g. "Password", "password", " PASSWORD " all match a request for "password"
+  function getField(row, name){
+    const target = name.trim().toLowerCase();
+    const key = Object.keys(row).find(k => k.trim().toLowerCase() === target);
+    return key ? (row[key] || '') : '';
+  }
+
   const sprinkleWrap = document.getElementById('sprinkles');
   for(let i=0;i<20;i++){
     const s = document.createElement('span');
@@ -331,21 +384,18 @@
     document.getElementById(id).scrollIntoView({behavior:'smooth'});
   }
 
-  const params = new URLSearchParams(window.location.search);
-  const recipientId = params.get('id');
-
   function renderRecipient(row){
-    const welcome = row['welcome massage'] || '';
-    const finalMsg = row['final massage'] || 'We put together something sweet, just for you, and we hope it brings a smile.';
+    const welcome = getField(row, 'welcome massage');
+    const finalMsg = getField(row, 'final massage') || 'We put together something sweet, just for you, and we hope it brings a smile.';
 
-    document.getElementById('recName').textContent = row.name || 'You';
-    document.getElementById('recOcc').textContent = row.occasion || '';
+    document.getElementById('recName').textContent = getField(row, 'name') || 'You';
+    document.getElementById('recOcc').textContent = getField(row, 'occasion');
     document.getElementById('recMessagePreview').textContent =
       welcome || 'We put together something sweet, just for you 🍫';
     document.getElementById('fullMessage').textContent = finalMsg;
 
     const pairs = [1,2,3,4]
-      .map(i => ({ url: driveImageUrl(row['photo' + i]), caption: row['caption' + i] }))
+      .map(i => ({ url: driveImageUrl(getField(row, 'photo' + i)), caption: getField(row, 'caption' + i) }))
       .filter(p => p.url);
     const gridWrap = document.getElementById('photoGrid');
     gridWrap.innerHTML = '';
@@ -372,31 +422,55 @@
     });
   }
 
-  async function loadData(){
-    const loadingScreen = document.getElementById('loadingScreen');
+  /* ===== Password gate logic ===== */
+  let allRows = null;
+  const gate = document.getElementById('gate');
+  const gateStatus = document.getElementById('gateStatus');
+  const gateError = document.getElementById('gateError');
+  const passwordInput = document.getElementById('passwordInput');
+  const unlockBtn = document.getElementById('unlockBtn');
 
-    if(recipientId === null){
-      loadingScreen.textContent = 'This link is incomplete. Please use the QR code from your Cancoé card.';
+  async function fetchRows(){
+    gateStatus.textContent = 'Loading…';
+    try{
+      const res = await fetch(`https://opensheet.elk.sh/${SPREADSHEET_ID}/${encodeURIComponent(SHEET_NAME)}`);
+      allRows = await res.json();
+      gateStatus.textContent = '';
+    }catch(err){
+      gateStatus.textContent = 'Could not connect. Please check your internet and try again.';
+    }
+  }
+  fetchRows();
+
+  function tryUnlock(){
+    const entered = passwordInput.value.trim();
+    gateError.textContent = '';
+
+    if(!entered){
+      gateError.textContent = 'Please enter your code.';
+      return;
+    }
+    if(allRows === null){
+      gateError.textContent = 'Still loading, please wait a second and try again.';
       return;
     }
 
-    try{
-      const res = await fetch(`https://opensheet.elk.sh/${SPREADSHEET_ID}/${encodeURIComponent(SHEET_NAME)}`);
-      const rows = await res.json();
-      const row = rows[Number(recipientId)];
+    const row = allRows.find(r => getField(r, 'password').trim().toLowerCase() === entered.toLowerCase());
 
-      if(!row){
-        loadingScreen.textContent = 'Sorry, this link isn\'t working. Please contact the Cancoé team.';
-        return;
-      }
-
-      renderRecipient(row);
-      loadingScreen.style.display = 'none';
-    }catch(err){
-      loadingScreen.textContent = 'Something went wrong loading your gift. Please try again in a moment.';
+    if(!row){
+      gateError.textContent = 'That code doesn\'t match. Please check and try again.';
+      return;
     }
+
+    renderRecipient(row);
+    gate.style.display = 'none';
+    document.body.style.overflow = 'auto';
   }
-  loadData();
+
+  unlockBtn.addEventListener('click', tryUnlock);
+  passwordInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') tryUnlock();
+  });
 
   const envelope = document.getElementById('envelope');
   const letterPaper = document.getElementById('letterPaper');
